@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import Users from '@/features/users'
+import UsersAgGrid from '@/features/users/index-ag-grid'
 
 export const Route = createLazyFileRoute('/_authenticated/users/')({
-  component: Users,
+  component: UsersAgGrid,
 })
