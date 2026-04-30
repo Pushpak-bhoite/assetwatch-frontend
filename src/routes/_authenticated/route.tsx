@@ -1,12 +1,29 @@
 import Cookies from 'js-cookie'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import { SearchProvider } from '@/context/search-context'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
 
+const ACCESS_TOKEN_KEY = 'thisisjustarandomstring'
+
 export const Route = createFileRoute('/_authenticated')({
+  beforeLoad: ({ location }) => {
+    // Check if user is authenticated
+    const cookieState = Cookies.get(ACCESS_TOKEN_KEY)
+    const token = cookieState ? JSON.parse(cookieState) : null
+
+    if (!token) {
+      // Redirect to sign-in with the current URL as redirect parameter
+      throw redirect({
+        to: '/sign-in',
+        search: {
+          redirect: location.href,
+        },
+      })
+    }
+  },
   component: RouteComponent,
 })
 

@@ -2,6 +2,7 @@ import { HTMLAttributes, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from '@tanstack/react-router'
 import { IconBrandFacebook, IconBrandGithub } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -15,11 +16,17 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
+import { authService } from '@/features/auth/api/auth.service'
+import { toast } from '@/hooks/use-toast'
 
 type SignUpFormProps = HTMLAttributes<HTMLDivElement>
 
 const formSchema = z
   .object({
+    name: z
+      .string()
+      .min(1, { message: 'Please enter your name' })
+      .min(2, { message: 'Name must be at least 2 characters long' }),
     email: z
       .string()
       .min(1, { message: 'Please enter your email' })
@@ -41,24 +48,47 @@ const formSchema = z
 
 export function SignUpForm({ className, ...props }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
       confirmPassword: '',
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    // eslint-disable-next-line no-console
-    console.log(data)
 
-    setTimeout(() => {
+    try {
+      // Call register API
+      await authService.register({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      })
+
+      toast({
+        title: 'Account created successfully!',
+        description: 'Please sign in with your new account.',
+      })
+
+      // Redirect to sign-in page
+      router.navigate({ to: '/sign-in' })
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } } }
+      toast({
+        variant: 'destructive',
+        title: 'Registration failed',
+        description:
+          err.response?.data?.detail || 'Could not create account. Please try again.',
+      })
+    } finally {
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   return (
@@ -66,6 +96,19 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className='grid gap-2'>
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder='Your name or organization name' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name='email'
@@ -106,7 +149,7 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
               )}
             />
             <Button className='mt-2' disabled={isLoading}>
-              Create Account
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
 
             <div className='relative my-2'>

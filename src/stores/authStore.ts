@@ -3,11 +3,15 @@ import { create } from 'zustand'
 
 const ACCESS_TOKEN = 'thisisjustarandomstring'
 
-interface AuthUser {
-  accountNo: string
+// User interface matching the backend User schema
+export interface AuthUser {
+  id: string
   email: string
-  role: string[]
-  exp: number
+  name: string
+  organization_type: string
+  is_active: boolean
+  is_superuser: boolean
+  is_verified: boolean
 }
 
 interface AuthState {
@@ -18,10 +22,11 @@ interface AuthState {
     setAccessToken: (accessToken: string) => void
     resetAccessToken: () => void
     reset: () => void
+    isAuthenticated: () => boolean
   }
 }
 
-export const useAuthStore = create<AuthState>()((set) => {
+export const useAuthStore = create<AuthState>()((set, get) => {
   const cookieState = Cookies.get(ACCESS_TOKEN)
   const initToken = cookieState ? JSON.parse(cookieState) : ''
   return {
@@ -48,8 +53,13 @@ export const useAuthStore = create<AuthState>()((set) => {
             auth: { ...state.auth, user: null, accessToken: '' },
           }
         }),
+      isAuthenticated: () => {
+        const state = get()
+        return !!state.auth.accessToken
+      },
     },
   }
 })
 
-// export const useAuth = () => useAuthStore((state) => state.auth)
+// Helper hook to check authentication status
+export const useAuth = () => useAuthStore((state) => state.auth)

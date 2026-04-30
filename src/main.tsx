@@ -12,6 +12,10 @@ import { handleServerError } from '@/utils/handle-server-error'
 import { toast } from '@/hooks/use-toast'
 import { ThemeProvider } from './context/theme-context'
 import './index.css'
+
+// Initialize AG Grid (must be imported before any AG Grid components)
+import '@/lib/ag-grid-config'
+
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 

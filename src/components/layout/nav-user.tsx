@@ -1,3 +1,4 @@
+import { useRouter } from '@tanstack/react-router'
 import {
   BadgeCheck,
   Bell,
@@ -22,6 +23,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { useAuthStore } from '@/stores/authStore'
+import { authService } from '@/features/auth/api/auth.service'
+import { toast } from '@/hooks/use-toast'
 
 export function NavUser({
   user,
@@ -33,6 +37,24 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  const { reset } = useAuthStore((state) => state.auth)
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout()
+    } catch (error) {
+      // Even if server logout fails, we still clear local state
+      console.error('Logout error:', error)
+    } finally {
+      reset()
+      toast({
+        title: 'Logged out',
+        description: 'You have been successfully logged out.',
+      })
+      router.navigate({ to: '/sign-in' })
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -95,7 +117,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>
