@@ -18,6 +18,8 @@ import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index
 import { Route as authSignInImport } from './routes/(auth)/sign-in'
 import { Route as authOtpImport } from './routes/(auth)/otp'
 import { Route as auth500Import } from './routes/(auth)/500'
+import { Route as AuthenticatedAssetsIndexImport } from './routes/_authenticated/assets/index'
+import { Route as AuthenticatedAssetsAssetIdImport } from './routes/_authenticated/assets/$assetId'
 
 // Create Virtual Routes
 
@@ -228,6 +230,14 @@ const AuthenticatedAppsIndexLazyRoute = AuthenticatedAppsIndexLazyImport.update(
   import('./routes/_authenticated/apps/index.lazy').then((d) => d.Route),
 )
 
+const AuthenticatedAssetsIndexRoute = AuthenticatedAssetsIndexImport.update({
+  id: '/assets/',
+  path: '/assets/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_authenticated/assets/index.lazy').then((d) => d.Route),
+)
+
 const AuthenticatedSettingsNotificationsLazyRoute =
   AuthenticatedSettingsNotificationsLazyImport.update({
     id: '/notifications',
@@ -271,6 +281,16 @@ const AuthenticatedSettingsAccountLazyRoute =
       (d) => d.Route,
     ),
   )
+
+const AuthenticatedAssetsAssetIdRoute = AuthenticatedAssetsAssetIdImport.update(
+  {
+    id: '/assets/$assetId',
+    path: '/assets/$assetId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any,
+).lazy(() =>
+  import('./routes/_authenticated/assets/$assetId.lazy').then((d) => d.Route),
+)
 
 // Populate the FileRoutesByPath interface
 
@@ -374,6 +394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/assets/$assetId': {
+      id: '/_authenticated/assets/$assetId'
+      path: '/assets/$assetId'
+      fullPath: '/assets/$assetId'
+      preLoaderRoute: typeof AuthenticatedAssetsAssetIdImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/settings/account': {
       id: '/_authenticated/settings/account'
       path: '/account'
@@ -401,6 +428,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsLazyImport
       parentRoute: typeof AuthenticatedSettingsRouteLazyImport
+    }
+    '/_authenticated/assets/': {
+      id: '/_authenticated/assets/'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof AuthenticatedAssetsIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/apps/': {
       id: '/_authenticated/apps/'
@@ -478,6 +512,8 @@ const AuthenticatedSettingsRouteLazyRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteLazyRoute: typeof AuthenticatedSettingsRouteLazyRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAssetsAssetIdRoute: typeof AuthenticatedAssetsAssetIdRoute
+  AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
   AuthenticatedAppsIndexLazyRoute: typeof AuthenticatedAppsIndexLazyRoute
   AuthenticatedChatsIndexLazyRoute: typeof AuthenticatedChatsIndexLazyRoute
   AuthenticatedHelpCenterIndexLazyRoute: typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -489,6 +525,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteLazyRoute:
     AuthenticatedSettingsRouteLazyRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAssetsAssetIdRoute: AuthenticatedAssetsAssetIdRoute,
+  AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
   AuthenticatedAppsIndexLazyRoute: AuthenticatedAppsIndexLazyRoute,
   AuthenticatedChatsIndexLazyRoute: AuthenticatedChatsIndexLazyRoute,
   AuthenticatedHelpCenterIndexLazyRoute: AuthenticatedHelpCenterIndexLazyRoute,
@@ -513,10 +551,12 @@ export interface FileRoutesByFullPath {
   '/404': typeof errors404LazyRoute
   '/503': typeof errors503LazyRoute
   '/': typeof AuthenticatedIndexRoute
+  '/assets/$assetId': typeof AuthenticatedAssetsAssetIdRoute
   '/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceLazyRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
+  '/assets': typeof AuthenticatedAssetsIndexRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/chats': typeof AuthenticatedChatsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -537,10 +577,12 @@ export interface FileRoutesByTo {
   '/404': typeof errors404LazyRoute
   '/503': typeof errors503LazyRoute
   '/': typeof AuthenticatedIndexRoute
+  '/assets/$assetId': typeof AuthenticatedAssetsAssetIdRoute
   '/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceLazyRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
+  '/assets': typeof AuthenticatedAssetsIndexRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/chats': typeof AuthenticatedChatsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -565,10 +607,12 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500LazyRoute
   '/(errors)/503': typeof errors503LazyRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/assets/$assetId': typeof AuthenticatedAssetsAssetIdRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceLazyRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
+  '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexLazyRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexLazyRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -593,10 +637,12 @@ export interface FileRouteTypes {
     | '/404'
     | '/503'
     | '/'
+    | '/assets/$assetId'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/assets'
     | '/apps'
     | '/chats'
     | '/help-center'
@@ -616,10 +662,12 @@ export interface FileRouteTypes {
     | '/404'
     | '/503'
     | '/'
+    | '/assets/$assetId'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/assets'
     | '/apps'
     | '/chats'
     | '/help-center'
@@ -642,10 +690,12 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/assets/$assetId'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/assets/'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
     | '/_authenticated/help-center/'
@@ -714,6 +764,8 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/settings",
         "/_authenticated/",
+        "/_authenticated/assets/$assetId",
+        "/_authenticated/assets/",
         "/_authenticated/apps/",
         "/_authenticated/chats/",
         "/_authenticated/help-center/",
@@ -769,6 +821,10 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/index.tsx",
       "parent": "/_authenticated"
     },
+    "/_authenticated/assets/$assetId": {
+      "filePath": "_authenticated/assets/$assetId.tsx",
+      "parent": "/_authenticated"
+    },
     "/_authenticated/settings/account": {
       "filePath": "_authenticated/settings/account.lazy.tsx",
       "parent": "/_authenticated/settings"
@@ -784,6 +840,10 @@ export const routeTree = rootRoute
     "/_authenticated/settings/notifications": {
       "filePath": "_authenticated/settings/notifications.lazy.tsx",
       "parent": "/_authenticated/settings"
+    },
+    "/_authenticated/assets/": {
+      "filePath": "_authenticated/assets/index.tsx",
+      "parent": "/_authenticated"
     },
     "/_authenticated/apps/": {
       "filePath": "_authenticated/apps/index.lazy.tsx",

@@ -9,6 +9,7 @@ import {
   IconLock,
   IconLockAccess,
   IconMessages,
+  IconNetwork,
   IconNotification,
   IconPackages,
   IconPalette,
@@ -53,6 +54,11 @@ export const sidebarData: SidebarData = {
           title: 'Dashboard',
           url: '/',
           icon: IconLayoutDashboard,
+        },
+        {
+          title: 'Assets',
+          url: '/assets',
+          icon: IconNetwork,
         },
         {
           title: 'Tasks',
