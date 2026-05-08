@@ -14,6 +14,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { AssetsAgGridTable } from './components/assets-ag-grid-table'
+import { AssetsActionDialog, Asset } from './components/assets-action-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,19 +28,10 @@ import {
 import { toast } from '@/hooks/use-toast'
 import apiClient from '@/lib/api-client'
 
-// Define Asset type for this page
-interface Asset {
-  id: string
-  name: string
-  asset_type: string
-  description?: string
-  monitor_count: number
-  created_at: string
-  updated_at: string
-}
-
 export default function Assets() {
   // Dialog states
+  const [actionDialogOpen, setActionDialogOpen] = useState(false)
+  const [currentAsset, setCurrentAsset] = useState<Asset | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -49,14 +41,37 @@ export default function Assets() {
   const [refreshKey, setRefreshKey] = useState(0)
 
   /**
-   * Handle edit action
+   * Handle add new asset - open dialog in add mode
+   */
+  const handleAddAsset = useCallback(() => {
+    setCurrentAsset(null)
+    setActionDialogOpen(true)
+  }, [])
+
+  /**
+   * Handle edit action - open dialog in edit mode
    */
   const handleEdit = useCallback((asset: Asset) => {
-    // TODO: Implement edit modal or navigate to edit page
-    toast({
-      title: 'Edit Asset',
-      description: `Editing ${asset.name} - Feature coming soon!`,
-    })
+    setCurrentAsset(asset)
+    setActionDialogOpen(true)
+  }, [])
+
+  /**
+   * Handle dialog close
+   */
+  const handleActionDialogClose = useCallback((open: boolean) => {
+    setActionDialogOpen(open)
+    if (!open) {
+      // Clear current asset when dialog closes
+      setTimeout(() => setCurrentAsset(null), 200)
+    }
+  }, [])
+
+  /**
+   * Handle successful create/update
+   */
+  const handleActionSuccess = useCallback(() => {
+    setRefreshKey((k) => k + 1)
   }, [])
 
   /**
@@ -101,17 +116,6 @@ export default function Assets() {
   const handleSelectionChanged = useCallback((assets: Asset[]) => {
     setSelectedAssets(assets)
   }, [])
-
-  /**
-   * Handle add new asset
-   */
-  const handleAddAsset = () => {
-    // TODO: Implement add asset modal or navigate to add page
-    toast({
-      title: 'Add Asset',
-      description: 'Add asset feature coming soon!',
-    })
-  }
 
   return (
     <>
@@ -187,6 +191,14 @@ export default function Assets() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add/Edit Asset Dialog */}
+      <AssetsActionDialog
+        currentRow={currentAsset}
+        open={actionDialogOpen}
+        onOpenChange={handleActionDialogClose}
+        onSuccess={handleActionSuccess}
+      />
     </>
   )
 }

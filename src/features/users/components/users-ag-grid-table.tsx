@@ -8,7 +8,7 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import { IServerSideGetRowsParams, IServerSideGetRowsRequest } from 'ag-grid-community'
 import GridTable, { GridTableRef } from '@/components/custom/GridTable'
-import { usersColumnDefs } from './users-ag-grid-columns'
+import { getUsersColumnDefs } from './users-ag-grid-columns'
 import apiClient from '@/lib/api-client'
 
 // ==================== TYPES ====================
@@ -24,6 +24,12 @@ interface UserListResponse {
 interface UsersAgGridTableProps {
   /** Callback when a row is clicked */
   onRowClicked?: (data: any) => void
+  /** Callback when edit action is clicked */
+  onEdit?: (data: any) => void
+  /** Callback when delete action is clicked */
+  onDelete?: (data: any) => void
+  /** Callback when a toggle field changes (status/verified) */
+  onToggle?: (userId: string, field: string, newValue: boolean) => Promise<void>
   /** Callback when selection changes */
   onSelectionChanged?: (selectedRows: any[]) => void
   /** Enable row selection */
@@ -36,6 +42,9 @@ interface UsersAgGridTableProps {
 
 export function UsersAgGridTable({
   onRowClicked,
+  onEdit,
+  onDelete,
+  onToggle,
   onSelectionChanged,
   rowSelection,
   className,
@@ -47,6 +56,12 @@ export function UsersAgGridTable({
   // Store pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+
+  // Get column definitions with action handlers
+  const columnDefs = useMemo(
+    () => getUsersColumnDefs(onEdit, onDelete, onToggle),
+    [onEdit, onDelete, onToggle]
+  )
 
   /**
    * Server-side datasource for AG Grid
@@ -206,7 +221,7 @@ export function UsersAgGridTable({
 
       <GridTable
         ref={tableRef}
-        columnDefs={usersColumnDefs}
+        columnDefs={columnDefs}
         dataSource={dataSource}
         rowSelection={rowSelection}
         pagination={true}

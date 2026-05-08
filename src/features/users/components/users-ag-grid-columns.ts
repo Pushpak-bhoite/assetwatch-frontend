@@ -6,6 +6,8 @@
  */
 
 import { ColDef } from 'ag-grid-community'
+import { UsersActionsCellRenderer } from './users-actions-cell-renderer'
+import { UsersToggleCellRenderer } from './users-toggle-cell-renderer'
 
 /**
  * Get display value helper - returns '-' for null/undefined/empty values
@@ -46,9 +48,19 @@ const formatDate = (params: any): string => {
 }
 
 /**
+ * Organization type options for dropdowns
+ */
+export const organizationTypes = [
+  { label: 'AssetWatch Admin', value: 'assetwatch' },
+  { label: 'Customer', value: 'customer' },
+  { label: 'Reseller', value: 'reseller' },
+  { label: 'Reseller Customer', value: 'reseller_customer' },
+]
+
+/**
  * Organization type display mapping
  */
-const organizationTypeLabels: Record<string, string> = {
+export const organizationTypeLabels: Record<string, string> = {
   assetwatch: 'AssetWatch Admin',
   customer: 'Customer',
   reseller: 'Reseller',
@@ -65,9 +77,14 @@ const formatOrganizationType = (params: any): string => {
 }
 
 /**
- * Users table column definitions
+ * Users table column definitions factory
+ * Returns columns with action handlers
  */
-export const usersColumnDefs: ColDef[] = [
+export const getUsersColumnDefs = (
+  onEdit?: (data: any) => void,
+  onDelete?: (data: any) => void,
+  onToggle?: (userId: string, field: string, newValue: boolean) => Promise<void>
+): ColDef[] => [
   {
     field: 'name',
     headerName: 'Name',
@@ -80,6 +97,7 @@ export const usersColumnDefs: ColDef[] = [
       maxNumConditions: 1,
     },
     minWidth: 150,
+    flex: 1,
   },
   {
     field: 'email',
@@ -93,6 +111,7 @@ export const usersColumnDefs: ColDef[] = [
       maxNumConditions: 1,
     },
     minWidth: 200,
+    flex: 1.5,
   },
   {
     field: 'organization_type',
@@ -109,32 +128,40 @@ export const usersColumnDefs: ColDef[] = [
   {
     field: 'is_active',
     headerName: 'Status',
-    headerTooltip: 'Active Status',
+    headerTooltip: 'Active Status (Click to toggle)',
     filter: 'agSetColumnFilter',
-    valueFormatter: (params) => (params.value ? 'Active' : 'Inactive'),
     filterParams: {
       values: [true, false],
       valueFormatter: (params: any) => (params.value ? 'Active' : 'Inactive'),
     },
-    cellStyle: (params) => ({
-      color: params.value ? 'var(--success-color, #22c55e)' : 'var(--muted-color, #6b7280)',
-      fontWeight: 500,
-    }),
-    minWidth: 100,
-    maxWidth: 120,
+    cellRenderer: UsersToggleCellRenderer,
+    cellRendererParams: {
+      onToggle,
+      field: 'is_active',
+      activeLabel: 'Active',
+      inactiveLabel: 'Inactive',
+    },
+    minWidth: 140,
+    maxWidth: 160,
   },
   {
     field: 'is_verified',
     headerName: 'Verified',
-    headerTooltip: 'Email Verified',
+    headerTooltip: 'Email Verified (Click to toggle)',
     filter: 'agSetColumnFilter',
-    valueFormatter: formatBoolean,
     filterParams: {
       values: [true, false],
       valueFormatter: (params: any) => (params.value ? 'Yes' : 'No'),
     },
-    minWidth: 100,
-    maxWidth: 120,
+    cellRenderer: UsersToggleCellRenderer,
+    cellRendererParams: {
+      onToggle,
+      field: 'is_verified',
+      activeLabel: 'Verified',
+      inactiveLabel: 'Unverified',
+    },
+    minWidth: 140,
+    maxWidth: 160,
   },
   {
     field: 'is_superuser',
@@ -148,8 +175,28 @@ export const usersColumnDefs: ColDef[] = [
     },
     minWidth: 120,
     maxWidth: 140,
-    hide: true, // Hidden by default, can be shown via column menu
+    hide: true, // Hidden by default
+  },
+  {
+    field: 'actions',
+    headerName: 'Actions',
+    headerTooltip: 'Actions',
+    filter: false,
+    sortable: false,
+    resizable: false,
+    suppressHeaderMenuButton: true,
+    minWidth: 100,
+    maxWidth: 120,
+    cellStyle: { cursor: 'default' },
+    cellRenderer: UsersActionsCellRenderer,
+    cellRendererParams: {
+      onEdit,
+      onDelete,
+    },
   },
 ]
 
-export default usersColumnDefs
+// Legacy export for backward compatibility
+export const usersColumnDefs = getUsersColumnDefs()
+
+export default getUsersColumnDefs

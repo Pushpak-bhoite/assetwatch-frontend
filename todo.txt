@@ -1,0 +1,11 @@
+Airtel DNS - no asset type -Done
+
+update main logo icons/texts with real data.
+
+avoid admin user update his permissions from FE/BE
+
+Integrate forgot pass 
+
+Observability
+
+
