@@ -4,6 +4,7 @@ import {
   IconBug,
   IconChecklist,
   IconError404,
+  IconHeartRateMonitor,
   IconHelp,
   IconLayoutDashboard,
   IconLock,
@@ -59,6 +60,11 @@ export const sidebarData: SidebarData = {
           title: 'Assets',
           url: '/assets',
           icon: IconNetwork,
+        },
+        {
+          title: 'Observability',
+          url: '/observability',
+          icon: IconHeartRateMonitor,
         },
         {
           title: 'Tasks',

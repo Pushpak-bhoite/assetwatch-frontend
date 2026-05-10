@@ -18,6 +18,7 @@ import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index
 import { Route as authSignInImport } from './routes/(auth)/sign-in'
 import { Route as authOtpImport } from './routes/(auth)/otp'
 import { Route as auth500Import } from './routes/(auth)/500'
+import { Route as AuthenticatedObservabilityIndexImport } from './routes/_authenticated/observability/index'
 import { Route as AuthenticatedAssetsIndexImport } from './routes/_authenticated/assets/index'
 import { Route as AuthenticatedAssetsAssetIdImport } from './routes/_authenticated/assets/$assetId'
 
@@ -230,6 +231,17 @@ const AuthenticatedAppsIndexLazyRoute = AuthenticatedAppsIndexLazyImport.update(
   import('./routes/_authenticated/apps/index.lazy').then((d) => d.Route),
 )
 
+const AuthenticatedObservabilityIndexRoute =
+  AuthenticatedObservabilityIndexImport.update({
+    id: '/observability/',
+    path: '/observability/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/observability/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 const AuthenticatedAssetsIndexRoute = AuthenticatedAssetsIndexImport.update({
   id: '/assets/',
   path: '/assets/',
@@ -436,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssetsIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/observability/': {
+      id: '/_authenticated/observability/'
+      path: '/observability'
+      fullPath: '/observability'
+      preLoaderRoute: typeof AuthenticatedObservabilityIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/apps/': {
       id: '/_authenticated/apps/'
       path: '/apps'
@@ -514,6 +533,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAssetsAssetIdRoute: typeof AuthenticatedAssetsAssetIdRoute
   AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
+  AuthenticatedObservabilityIndexRoute: typeof AuthenticatedObservabilityIndexRoute
   AuthenticatedAppsIndexLazyRoute: typeof AuthenticatedAppsIndexLazyRoute
   AuthenticatedChatsIndexLazyRoute: typeof AuthenticatedChatsIndexLazyRoute
   AuthenticatedHelpCenterIndexLazyRoute: typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -527,6 +547,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAssetsAssetIdRoute: AuthenticatedAssetsAssetIdRoute,
   AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
+  AuthenticatedObservabilityIndexRoute: AuthenticatedObservabilityIndexRoute,
   AuthenticatedAppsIndexLazyRoute: AuthenticatedAppsIndexLazyRoute,
   AuthenticatedChatsIndexLazyRoute: AuthenticatedChatsIndexLazyRoute,
   AuthenticatedHelpCenterIndexLazyRoute: AuthenticatedHelpCenterIndexLazyRoute,
@@ -557,6 +578,7 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
+  '/observability': typeof AuthenticatedObservabilityIndexRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/chats': typeof AuthenticatedChatsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -583,6 +605,7 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
+  '/observability': typeof AuthenticatedObservabilityIndexRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/chats': typeof AuthenticatedChatsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -613,6 +636,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
+  '/_authenticated/observability/': typeof AuthenticatedObservabilityIndexRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexLazyRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexLazyRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -643,6 +667,7 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/assets'
+    | '/observability'
     | '/apps'
     | '/chats'
     | '/help-center'
@@ -668,6 +693,7 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/assets'
+    | '/observability'
     | '/apps'
     | '/chats'
     | '/help-center'
@@ -696,6 +722,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
     | '/_authenticated/assets/'
+    | '/_authenticated/observability/'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
     | '/_authenticated/help-center/'
@@ -766,6 +793,7 @@ export const routeTree = rootRoute
         "/_authenticated/",
         "/_authenticated/assets/$assetId",
         "/_authenticated/assets/",
+        "/_authenticated/observability/",
         "/_authenticated/apps/",
         "/_authenticated/chats/",
         "/_authenticated/help-center/",
@@ -843,6 +871,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/assets/": {
       "filePath": "_authenticated/assets/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/observability/": {
+      "filePath": "_authenticated/observability/index.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/apps/": {
