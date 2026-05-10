@@ -9,3 +9,37 @@ Integrate forgot pass
 Observability
 
 
+Try to comprehend code, 
+
+
+
+next-start
+when you start next time, u'' have to collect monitors data via fast api. 
+
+
+
+
+
+
+
+Give metric data to copilot and ask - BE is this, FE of wanaware is this i wanna understand the 
+wanaware intensions and how that data is being showed, and how can we show
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Advanced - (first complete all requirements for MERN mentioned in notion)
+Webhooks
+socket io.
+visper - chatbot for help. 
+
