@@ -302,6 +302,20 @@ export function ObservabilityTable() {
     gridRef.current?.api?.refreshServerSide({ purge: true })
   }, [])
 
+  // Handler for after monitor is added - refresh and expand the row
+  const handleMonitorAdded = useCallback((assetId: string) => {
+    // Refresh the grid data
+    gridRef.current?.api?.refreshServerSide({ purge: true })
+    
+    // After a short delay to allow data refresh, expand the row
+    setTimeout(() => {
+      const rowNode = gridRef.current?.api?.getRowNode(assetId)
+      if (rowNode) {
+        rowNode.setExpanded(true)
+      }
+    }, 500)
+  }, [])
+
   // Create the theme with current mode
   const gridTheme = useMemo(
     () =>
@@ -350,7 +364,7 @@ export function ObservabilityTable() {
         open={addMonitorOpen}
         onOpenChange={setAddMonitorOpen}
         asset={selectedAssetForMonitor}
-        onSuccess={handleRefresh}
+        onSuccess={handleMonitorAdded}
       />
 
       {/* Edit Asset Dialog */}
