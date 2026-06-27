@@ -1,20 +1,13 @@
 /**
  * Monitors Table Component
  *
- * AG Grid table for displaying and managing monitors.
+ * AG Grid table for displaying and managing monitors using the reusable GridTable component.
  */
 
 import { useCallback, useRef, useState, useMemo } from 'react'
-import {
-  GetRowIdParams,
-  GridReadyEvent,
-  IServerSideDatasource,
-  IServerSideGetRowsParams,
-  themeQuartz,
-} from 'ag-grid-community'
-import { AgGridReact } from 'ag-grid-react'
+import { IServerSideGetRowsParams } from 'ag-grid-community'
+import GridTable, { GridTableRef } from '@/components/custom/GridTable'
 import { apiClient } from '@/lib/api-client'
-import { useTheme } from '@/context/theme-context'
 import { getMonitorColumnDefs } from './monitors-columns'
 import { AddMonitorDialog } from './add-monitor-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -34,8 +27,7 @@ import { Input } from '@/components/ui/input'
 const PAGE_SIZE = 20
 
 export function MonitorsTable() {
-  const gridRef = useRef<AgGridReact>(null)
-  const { theme } = useTheme()
+  const tableRef = useRef<GridTableRef>(null)
   const { toast } = useToast()
 
   // Dialog states
@@ -71,7 +63,7 @@ export function MonitorsTable() {
           title: monitor.is_active ? 'Monitor paused' : 'Monitor resumed',
           description: `Monitor ${monitor.is_active ? 'paused' : 'resumed'} successfully`,
         })
-        gridRef.current?.api?.refreshServerSide({ purge: true })
+        tableRef.current?.getRef()?.api?.refreshServerSide({ purge: true })
         fetchStats()
       } catch (error: any) {
         toast({
@@ -101,7 +93,7 @@ export function MonitorsTable() {
         title: 'Monitor deleted',
         description: `Successfully deleted ${monitorToDelete.friendly_name}`,
       })
-      gridRef.current?.api?.refreshServerSide({ purge: true })
+      tableRef.current?.getRef()?.api?.refreshServerSide({ purge: true })
       fetchStats()
     } catch (error: any) {
       toast({
@@ -126,41 +118,55 @@ export function MonitorsTable() {
     [handleToggleMonitor, handleDeleteMonitor]
   )
 
+  // Pagination state
+  const [pageSize, setPageSize] = useState(PAGE_SIZE)
+
   // Server-side datasource
-  const datasource: IServerSideDatasource = useMemo(
+  const dataSource = useMemo(
     () => ({
       getRows: async (params: IServerSideGetRowsParams) => {
-        const { startRow, endRow, sortModel } = params.request
-        const page = Math.floor((startRow || 0) / PAGE_SIZE) + 1
+        const { startRow, sortModel }: any = params.request
+        const limit = pageSize
+        const page = startRow ? Math.floor(startRow / limit) + 1 : 1
+
+        const gridApi = tableRef.current?.getRef()?.api
+        gridApi?.hideOverlay()
 
         try {
-          const queryParams: Record<string, any> = {
-            page,
-            limit: PAGE_SIZE,
-          }
+          // Get sort params
+          const [sortInfo] = sortModel?.length
+            ? sortModel
+            : [{ colId: 'created_at', sort: 'desc' }]
 
-          // Add sorting
-          if (sortModel && sortModel.length > 0) {
-            queryParams.sort_by = sortModel[0].colId
-            queryParams.order = sortModel[0].sort
-          }
+          // Build query params
+          const queryParams = new URLSearchParams({
+            page: String(page),
+            limit: String(limit),
+            sort_by: sortInfo.colId,
+            order: sortInfo.sort || 'desc',
+          })
 
           // Add filters
           if (searchTerm) {
-            queryParams.search = searchTerm
+            queryParams.append('search', searchTerm)
           }
           if (typeFilter && typeFilter !== 'all') {
-            queryParams.monitor_type = typeFilter
+            queryParams.append('monitor_type', typeFilter)
           }
           if (statusFilter && statusFilter !== 'all') {
-            queryParams.status = statusFilter
+            queryParams.append('status', statusFilter)
           }
 
-          const response = await apiClient.get('/monitors', { params: queryParams })
-          const { data, total } = response.data
+          const response = await apiClient.get(`/monitors?${queryParams.toString()}`)
+          const { data: rowData, total } = response.data
+
+          // Show no rows overlay if empty
+          if (rowData.length === 0) {
+            gridApi?.showNoRowsOverlay()
+          }
 
           params.success({
-            rowData: data,
+            rowData,
             rowCount: total,
           })
 
@@ -168,49 +174,39 @@ export function MonitorsTable() {
           fetchStats()
         } catch (error) {
           console.error('Failed to fetch monitors:', error)
-          params.fail()
+          params.success({
+            rowData: [],
+            rowCount: 0,
+          })
+          gridApi?.showNoRowsOverlay()
         }
       },
     }),
-    [searchTerm, typeFilter, statusFilter, fetchStats]
+    [pageSize, searchTerm, typeFilter, statusFilter, fetchStats]
   )
 
-  // Grid ready handler
-  const onGridReady = useCallback(
-    (params: GridReadyEvent) => {
-      params.api.setGridOption('serverSideDatasource', datasource)
-      fetchStats()
-    },
-    [datasource, fetchStats]
-  )
-
-  // Get row ID
-  const getRowId = useCallback((params: GetRowIdParams) => params.data.id, [])
+  // Handle pagination changes
+  const handlePaginationChanged = useCallback((params: any) => {
+    const newPageSize = params.api.paginationGetPageSize()
+    setPageSize(newPageSize)
+  }, [])
 
   // Handle refresh
   const handleRefresh = useCallback(() => {
-    gridRef.current?.api?.refreshServerSide({ purge: true })
+    const api = tableRef.current?.getRef()?.api
+    if (api) {
+      api.refreshServerSide({ purge: true })
+    }
     fetchStats()
   }, [fetchStats])
 
   // Handle filter changes - refresh grid
   const applyFilters = useCallback(() => {
-    gridRef.current?.api?.refreshServerSide({ purge: true })
+    const api = tableRef.current?.getRef()?.api
+    if (api) {
+      api.refreshServerSide({ purge: true })
+    }
   }, [])
-
-  // AG Grid theme
-  const gridTheme = useMemo(
-    () =>
-      themeQuartz.withParams({
-        backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff',
-        foregroundColor: theme === 'dark' ? '#fafafa' : '#09090b',
-        borderColor: theme === 'dark' ? '#27272a' : '#e4e4e7',
-        headerBackgroundColor: theme === 'dark' ? '#18181b' : '#fafafa',
-        rowHoverColor: theme === 'dark' ? '#27272a' : '#f4f4f5',
-        selectedRowBackgroundColor: theme === 'dark' ? '#3f3f46' : '#e4e4e7',
-      }),
-    [theme]
-  )
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -306,25 +302,18 @@ export function MonitorsTable() {
 
       {/* Grid */}
       <div className="flex-1">
-        <AgGridReact
-          ref={gridRef}
-          theme={gridTheme}
+        <GridTable
+          ref={tableRef}
           columnDefs={columnDefs}
-          defaultColDef={{
-            sortable: true,
-            resizable: true,
-            flex: 1,
-            minWidth: 100,
-          }}
-          rowModelType="serverSide"
-          serverSideInitialRowCount={0}
-          cacheBlockSize={PAGE_SIZE}
+          dataSource={dataSource}
+          pagination={true}
+          paginationPageSize={pageSize}
+          cacheBlockSize={pageSize}
+          onPaginationChanged={handlePaginationChanged}
+          overlayNoRowsTemplate="No monitors found. Create your first monitor!"
+          serverSideInitialRowCount={10}
           maxBlocksInCache={10}
-          getRowId={getRowId}
-          onGridReady={onGridReady}
-          rowSelection="single"
-          suppressRowClickSelection
-          animateRows
+          suppressHorizontalScroll={false}
         />
       </div>
 
@@ -333,7 +322,7 @@ export function MonitorsTable() {
         open={addMonitorOpen}
         onOpenChange={setAddMonitorOpen}
         onSuccess={() => {
-          gridRef.current?.api?.refreshServerSide({ purge: true })
+          tableRef.current?.getRef()?.api?.refreshServerSide({ purge: true })
           fetchStats()
         }}
       />
