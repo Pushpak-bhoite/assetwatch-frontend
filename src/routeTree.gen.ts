@@ -19,6 +19,7 @@ import { Route as authSignInImport } from './routes/(auth)/sign-in'
 import { Route as authOtpImport } from './routes/(auth)/otp'
 import { Route as auth500Import } from './routes/(auth)/500'
 import { Route as AuthenticatedObservabilityIndexImport } from './routes/_authenticated/observability/index'
+import { Route as AuthenticatedMonitoringIndexImport } from './routes/_authenticated/monitoring/index'
 import { Route as AuthenticatedAssetsIndexImport } from './routes/_authenticated/assets/index'
 import { Route as AuthenticatedAssetsAssetIdImport } from './routes/_authenticated/assets/$assetId'
 
@@ -242,6 +243,17 @@ const AuthenticatedObservabilityIndexRoute =
     ),
   )
 
+const AuthenticatedMonitoringIndexRoute =
+  AuthenticatedMonitoringIndexImport.update({
+    id: '/monitoring/',
+    path: '/monitoring/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/monitoring/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 const AuthenticatedAssetsIndexRoute = AuthenticatedAssetsIndexImport.update({
   id: '/assets/',
   path: '/assets/',
@@ -448,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssetsIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/monitoring/': {
+      id: '/_authenticated/monitoring/'
+      path: '/monitoring'
+      fullPath: '/monitoring'
+      preLoaderRoute: typeof AuthenticatedMonitoringIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/observability/': {
       id: '/_authenticated/observability/'
       path: '/observability'
@@ -533,6 +552,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAssetsAssetIdRoute: typeof AuthenticatedAssetsAssetIdRoute
   AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
+  AuthenticatedMonitoringIndexRoute: typeof AuthenticatedMonitoringIndexRoute
   AuthenticatedObservabilityIndexRoute: typeof AuthenticatedObservabilityIndexRoute
   AuthenticatedAppsIndexLazyRoute: typeof AuthenticatedAppsIndexLazyRoute
   AuthenticatedChatsIndexLazyRoute: typeof AuthenticatedChatsIndexLazyRoute
@@ -547,6 +567,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAssetsAssetIdRoute: AuthenticatedAssetsAssetIdRoute,
   AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
+  AuthenticatedMonitoringIndexRoute: AuthenticatedMonitoringIndexRoute,
   AuthenticatedObservabilityIndexRoute: AuthenticatedObservabilityIndexRoute,
   AuthenticatedAppsIndexLazyRoute: AuthenticatedAppsIndexLazyRoute,
   AuthenticatedChatsIndexLazyRoute: AuthenticatedChatsIndexLazyRoute,
@@ -578,6 +599,7 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
+  '/monitoring': typeof AuthenticatedMonitoringIndexRoute
   '/observability': typeof AuthenticatedObservabilityIndexRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/chats': typeof AuthenticatedChatsIndexLazyRoute
@@ -605,6 +627,7 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
+  '/monitoring': typeof AuthenticatedMonitoringIndexRoute
   '/observability': typeof AuthenticatedObservabilityIndexRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/chats': typeof AuthenticatedChatsIndexLazyRoute
@@ -636,6 +659,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsLazyRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
+  '/_authenticated/monitoring/': typeof AuthenticatedMonitoringIndexRoute
   '/_authenticated/observability/': typeof AuthenticatedObservabilityIndexRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexLazyRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexLazyRoute
@@ -667,6 +691,7 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/assets'
+    | '/monitoring'
     | '/observability'
     | '/apps'
     | '/chats'
@@ -693,6 +718,7 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/assets'
+    | '/monitoring'
     | '/observability'
     | '/apps'
     | '/chats'
@@ -722,6 +748,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
     | '/_authenticated/assets/'
+    | '/_authenticated/monitoring/'
     | '/_authenticated/observability/'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
@@ -793,6 +820,7 @@ export const routeTree = rootRoute
         "/_authenticated/",
         "/_authenticated/assets/$assetId",
         "/_authenticated/assets/",
+        "/_authenticated/monitoring/",
         "/_authenticated/observability/",
         "/_authenticated/apps/",
         "/_authenticated/chats/",
@@ -871,6 +899,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/assets/": {
       "filePath": "_authenticated/assets/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/monitoring/": {
+      "filePath": "_authenticated/monitoring/index.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/observability/": {

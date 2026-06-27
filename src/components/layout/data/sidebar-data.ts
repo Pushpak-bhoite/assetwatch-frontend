@@ -14,6 +14,7 @@ import {
   IconNotification,
   IconPackages,
   IconPalette,
+  IconRadar,
   IconServerOff,
   IconSettings,
   IconTool,
@@ -65,6 +66,11 @@ export const sidebarData: SidebarData = {
           title: 'Observability',
           url: '/observability',
           icon: IconHeartRateMonitor,
+        },
+        {
+          title: 'Monitoring',
+          url: '/monitoring',
+          icon: IconRadar,
         },
         {
           title: 'Tasks',
