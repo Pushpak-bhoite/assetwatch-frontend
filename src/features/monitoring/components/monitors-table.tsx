@@ -10,6 +10,7 @@ import GridTable, { GridTableRef } from '@/components/custom/GridTable'
 import { apiClient } from '@/lib/api-client'
 import { getMonitorColumnDefs } from './monitors-columns'
 import { AddMonitorDialog } from './add-monitor-dialog'
+import { EditMonitorDialog } from './edit-monitor-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { Monitor, MonitorStats } from '../types'
@@ -32,6 +33,8 @@ export function MonitorsTable() {
 
   // Dialog states
   const [addMonitorOpen, setAddMonitorOpen] = useState(false)
+  const [editMonitorOpen, setEditMonitorOpen] = useState(false)
+  const [monitorToEdit, setMonitorToEdit] = useState<Monitor | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [monitorToDelete, setMonitorToDelete] = useState<Monitor | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -76,6 +79,12 @@ export function MonitorsTable() {
     [toast, fetchStats]
   )
 
+  // Handler for editing monitor
+  const handleEditMonitor = useCallback((monitor: Monitor) => {
+    setMonitorToEdit(monitor)
+    setEditMonitorOpen(true)
+  }, [])
+
   // Handler for deleting monitor
   const handleDeleteMonitor = useCallback((monitor: Monitor) => {
     setMonitorToDelete(monitor)
@@ -113,9 +122,10 @@ export function MonitorsTable() {
     () =>
       getMonitorColumnDefs({
         onToggle: handleToggleMonitor,
+        onEdit: handleEditMonitor,
         onDelete: handleDeleteMonitor,
       }),
-    [handleToggleMonitor, handleDeleteMonitor]
+    [handleToggleMonitor, handleEditMonitor, handleDeleteMonitor]
   )
 
   // Pagination state
@@ -321,6 +331,19 @@ export function MonitorsTable() {
       <AddMonitorDialog
         open={addMonitorOpen}
         onOpenChange={setAddMonitorOpen}
+        onSuccess={() => {
+          tableRef.current?.getRef()?.api?.refreshServerSide({ purge: true })
+          fetchStats()
+        }}
+      />
+
+      <EditMonitorDialog
+        open={editMonitorOpen}
+        onOpenChange={(open) => {
+          setEditMonitorOpen(open)
+          if (!open) setMonitorToEdit(null)
+        }}
+        monitor={monitorToEdit}
         onSuccess={() => {
           tableRef.current?.getRef()?.api?.refreshServerSide({ purge: true })
           fetchStats()

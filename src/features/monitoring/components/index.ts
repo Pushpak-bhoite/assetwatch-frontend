@@ -1,3 +1,5 @@
 export { MonitorsTable } from './monitors-table'
 export { AddMonitorDialog } from './add-monitor-dialog'
+export { EditMonitorDialog } from './edit-monitor-dialog'
+export { TagInput } from './tag-input'
 export { getMonitorColumnDefs } from './monitors-columns'

@@ -1,0 +1,42 @@
+Airtel DNS - no asset type -Done
+
+update main logo icons/texts with real data.
+
+avoid admin user update his permissions from FE/BE
+
+Integrate forgot pass 
+
+Observability
+
+
+Try to comprehend code, 
+
+
+
+next-start
+when you start next time, u'' have to collect monitors data via fast api. 
+
+
+
+
+
+
+
+Give metric data to copilot and ask - BE is this, FE of wanaware is this i wanna understand the 
+wanaware intensions and how that data is being showed, and how can we show
+
+
+
+Advanced - (first complete all requirements for MERN mentioned in notion)
+Webhooks
+socket io.
+visper - chatbot for help. 
+
+
+related platforms
+AppDynamics
+Dynatrace
+Splunk
+
+
+-Link- https://chatgpt.com/s/t_6a3c129a5abc819191651359005d52ba

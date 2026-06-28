@@ -1,7 +1,7 @@
 /**
- * Add Monitor Dialog
+ * Edit Monitor Dialog
  *
- * Modal dialog for creating a new monitor with type-specific form fields.
+ * Modal dialog for editing an existing monitor with type-specific form fields.
  */
 
 import { useState, useEffect } from 'react'
@@ -39,6 +39,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { apiClient } from '@/lib/api-client'
 import {
+  Monitor,
   MonitorType,
   MONITOR_TYPE_INFO,
   INTERVAL_OPTIONS,
@@ -98,21 +99,14 @@ type FormValues = HTTPFormValues | PingFormValues | PortFormValues | DNSFormValu
 
 // ==================== COMPONENT ====================
 
-interface AddMonitorDialogProps {
+interface EditMonitorDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  monitor: Monitor | null
   onSuccess?: () => void
 }
 
-const MonitorTypeCard = ({
-  type,
-  selected,
-  onClick,
-}: {
-  type: MonitorType
-  selected: boolean
-  onClick: () => void
-}) => {
+const MonitorTypeDisplay = ({ type }: { type: MonitorType }) => {
   const info = MONITOR_TYPE_INFO[type]
   const icons: Record<MonitorType, typeof Globe> = {
     http: Globe,
@@ -123,38 +117,32 @@ const MonitorTypeCard = ({
   const Icon = icons[type]
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col gap-2 rounded-lg border-2 p-4 text-left transition-all ${
-        selected
-          ? 'border-primary bg-primary/5'
-          : 'border-border hover:border-primary/50'
-      }`}
-    >
-      <div className="flex items-center gap-2">
-        <Icon size={20} className={selected ? 'text-primary' : 'text-muted-foreground'} />
+    <div className="flex items-center gap-2 rounded-lg border-2 border-primary bg-primary/5 p-4">
+      <Icon size={20} className="text-primary" />
+      <div>
         <span className="font-medium">{info.title}</span>
+        <p className="text-xs text-muted-foreground">{info.description}</p>
       </div>
-      <p className="text-xs text-muted-foreground">{info.description}</p>
-    </button>
+    </div>
   )
 }
 
-export function AddMonitorDialog({
+export function EditMonitorDialog({
   open,
   onOpenChange,
+  monitor,
   onSuccess,
-}: AddMonitorDialogProps) {
+}: EditMonitorDialogProps) {
   const { toast } = useToast()
   const { auth } = useAuthStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedType, setSelectedType] = useState<MonitorType>('http')
   const [tags, setTags] = useState<string[]>([])
 
-  // Get the appropriate schema based on selected type
+  const monitorType = monitor?.monitor_type || 'http'
+
+  // Get the appropriate schema based on monitor type
   const getSchema = () => {
-    switch (selectedType) {
+    switch (monitorType) {
       case 'http':
         return httpSchema
       case 'ping':
@@ -171,7 +159,7 @@ export function AddMonitorDialog({
   const form = useForm<FormValues>({
     resolver: zodResolver(getSchema()),
     defaultValues: {
-      monitor_type: selectedType,
+      monitor_type: monitorType,
       friendly_name: '',
       tags: [],
       notify_email: true,
@@ -187,30 +175,57 @@ export function AddMonitorDialog({
     } as any,
   })
 
-  // Reset form when type changes
+  // Populate form when monitor changes
   useEffect(() => {
-    form.reset({
-      monitor_type: selectedType,
-      friendly_name: '',
-      tags: [],
-      notify_email: true,
-      check_interval: '5m',
-      url: '',
-      host: '',
-      port: 80,
-      port_name: '',
-      hostname: '',
-      dns_server: '',
-      record_type: 'A',
-      expected_value: '',
-    } as any)
-    setTags([])
-  }, [selectedType, form])
+    if (monitor && open) {
+      const monitorTags = monitor.tags || []
+      setTags(monitorTags)
+
+      const baseValues = {
+        monitor_type: monitor.monitor_type,
+        friendly_name: monitor.friendly_name,
+        tags: monitorTags,
+        notify_email: monitor.notify_email,
+        check_interval: monitor.check_interval,
+      }
+
+      switch (monitor.monitor_type) {
+        case 'http':
+          form.reset({
+            ...baseValues,
+            url: monitor.target,
+          } as HTTPFormValues)
+          break
+        case 'ping':
+          form.reset({
+            ...baseValues,
+            host: monitor.target,
+          } as PingFormValues)
+          break
+        case 'port':
+          form.reset({
+            ...baseValues,
+            host: monitor.target,
+            port: monitor.port || 80,
+            port_name: monitor.port_name || '',
+          } as PortFormValues)
+          break
+        case 'dns':
+          form.reset({
+            ...baseValues,
+            hostname: monitor.target,
+            dns_server: monitor.dns_server || '',
+            record_type: monitor.record_type || 'A',
+            expected_value: monitor.expected_value || '',
+          } as DNSFormValues)
+          break
+      }
+    }
+  }, [monitor, open, form])
 
   // Reset when dialog closes
   useEffect(() => {
     if (!open) {
-      setSelectedType('http')
       setTags([])
       form.reset()
     }
@@ -230,17 +245,18 @@ export function AddMonitorDialog({
   }
 
   const onSubmit = async (data: FormValues) => {
+    if (!monitor) return
+
     setIsSubmitting(true)
     try {
-      const endpoint = `/monitors/${selectedType}`
-      await apiClient.post(endpoint, {
+      await apiClient.patch(`/monitors/${monitor.id}`, {
         ...data,
         tags,
       })
 
       toast({
-        title: 'Monitor created',
-        description: `${MONITOR_TYPE_INFO[selectedType].title} monitor has been created successfully.`,
+        title: 'Monitor updated',
+        description: `${monitor.friendly_name} has been updated successfully.`,
       })
 
       onOpenChange(false)
@@ -248,7 +264,7 @@ export function AddMonitorDialog({
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.response?.data?.detail || 'Failed to create monitor',
+        description: error.response?.data?.detail || 'Failed to update monitor',
         variant: 'destructive',
       })
     } finally {
@@ -256,35 +272,31 @@ export function AddMonitorDialog({
     }
   }
 
+  if (!monitor) return null
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Monitor</DialogTitle>
+          <DialogTitle>Edit Monitor</DialogTitle>
           <DialogDescription>
-            Create a new monitor to track the availability of your services.
+            Update the configuration for this monitor.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Monitor Type Selection */}
+        {/* Monitor Type Display (read-only) */}
         <div className="space-y-3">
           <Label className="text-sm font-medium">Monitor Type</Label>
-          <div className="grid grid-cols-2 gap-3">
-            {(['http', 'ping', 'port', 'dns'] as MonitorType[]).map((type) => (
-              <MonitorTypeCard
-                key={type}
-                type={type}
-                selected={selectedType === type}
-                onClick={() => setSelectedType(type)}
-              />
-            ))}
-          </div>
+          <MonitorTypeDisplay type={monitorType} />
+          <p className="text-xs text-muted-foreground">
+            Monitor type cannot be changed after creation.
+          </p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Type-specific fields */}
-            {selectedType === 'http' && (
+            {monitorType === 'http' && (
               <FormField
                 control={form.control}
                 name="url"
@@ -307,7 +319,7 @@ export function AddMonitorDialog({
               />
             )}
 
-            {selectedType === 'ping' && (
+            {monitorType === 'ping' && (
               <FormField
                 control={form.control}
                 name="host"
@@ -330,7 +342,7 @@ export function AddMonitorDialog({
               />
             )}
 
-            {selectedType === 'port' && (
+            {monitorType === 'port' && (
               <>
                 <FormField
                   control={form.control}
@@ -389,7 +401,7 @@ export function AddMonitorDialog({
               </>
             )}
 
-            {selectedType === 'dns' && (
+            {monitorType === 'dns' && (
               <>
                 <FormField
                   control={form.control}
@@ -416,7 +428,7 @@ export function AddMonitorDialog({
                       <FormLabel>Record Type</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value || 'A'}
+                        value={field.value || 'A'}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -542,7 +554,7 @@ export function AddMonitorDialog({
                   <FormLabel>Monitor Interval</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value || '5m'}
+                    value={field.value || '5m'}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -575,7 +587,7 @@ export function AddMonitorDialog({
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Monitor
+                Save Changes
               </Button>
             </DialogFooter>
           </form>

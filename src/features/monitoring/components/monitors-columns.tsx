@@ -14,7 +14,7 @@ import {
   Play,
   Pause,
   Trash2,
-  MoreHorizontal,
+  Pencil,
 } from 'lucide-react'
 
 // ==================== HELPERS ====================
@@ -207,10 +207,11 @@ function IntervalCellRenderer({ params }: IntervalCellProps) {
 interface ActionsCellProps {
   params: ICellRendererParams<Monitor>
   onToggle?: (monitor: Monitor) => void
+  onEdit?: (monitor: Monitor) => void
   onDelete?: (monitor: Monitor) => void
 }
 
-function ActionsCellRenderer({ params, onToggle, onDelete }: ActionsCellProps) {
+function ActionsCellRenderer({ params, onToggle, onEdit, onDelete }: ActionsCellProps) {
   const data = params.data
   if (!data) return null
 
@@ -231,6 +232,16 @@ function ActionsCellRenderer({ params, onToggle, onDelete }: ActionsCellProps) {
         {data.is_active ? <Pause size={16} /> : <Play size={16} />}
       </button>
       <button
+        className="rounded p-1.5 text-primary transition-colors hover:bg-primary/10"
+        title="Edit Monitor"
+        onClick={(e) => {
+          e.stopPropagation()
+          onEdit?.(data)
+        }}
+      >
+        <Pencil size={16} />
+      </button>
+      <button
         className="rounded p-1.5 text-red-600 transition-colors hover:bg-red-500/10"
         title="Delete Monitor"
         onClick={(e) => {
@@ -248,6 +259,7 @@ function ActionsCellRenderer({ params, onToggle, onDelete }: ActionsCellProps) {
 
 interface ColumnActions {
   onToggle?: (monitor: Monitor) => void
+  onEdit?: (monitor: Monitor) => void
   onDelete?: (monitor: Monitor) => void
 }
 
@@ -304,13 +316,14 @@ export function getMonitorColumnDefs(actions?: ColumnActions): ColDef<Monitor>[]
     {
       field: 'actions',
       headerName: '',
-      width: 100,
+      width: 120,
       sortable: false,
       filter: false,
       cellRenderer: (params: ICellRendererParams<Monitor>) => (
         <ActionsCellRenderer
           params={params}
           onToggle={actions?.onToggle}
+          onEdit={actions?.onEdit}
           onDelete={actions?.onDelete}
         />
       ),
