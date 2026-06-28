@@ -31,23 +31,6 @@ const formatBoolean = (params: any): string => {
 }
 
 /**
- * Format date value for display
- */
-const formatDate = (params: any): string => {
-  const value = params.value
-  if (!value) return '-'
-  try {
-    return new Date(value).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  } catch {
-    return '-'
-  }
-}
-
-/**
  * Organization type options for dropdowns
  */
 export const organizationTypes = [

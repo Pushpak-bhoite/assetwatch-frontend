@@ -57,7 +57,7 @@ export interface User {
 }
 
 interface UsersActionDialogProps {
-  currentRow?: User | null
+  currentRow?: Partial<User> | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void

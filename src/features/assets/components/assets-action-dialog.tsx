@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import apiClient from '@/lib/api-client'
-import { assetTypeCategories, allAssetTypes } from './assets-ag-grid-columns'
+import { assetTypeCategories } from './assets-ag-grid-columns'
 
 // ==================== TYPES ====================
 
@@ -158,21 +158,6 @@ export function AssetsActionDialog({
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  /**
-   * Get short display name for asset type
-   * e.g., "Circuit-Internet-Fiber Broadband" -> "Fiber Broadband"
-   */
-  const getShortAssetTypeName = (assetType: string): string => {
-    const parts = assetType.split('-')
-    if (parts.length >= 3) {
-      return parts.slice(2).join('-')
-    }
-    if (parts.length === 2) {
-      return parts[1]
-    }
-    return assetType
   }
 
   return (

@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
-import { IServerSideGetRowsParams, IServerSideGetRowsRequest } from 'ag-grid-community'
+import { IServerSideGetRowsParams } from 'ag-grid-community'
 import GridTable, { GridTableRef } from '@/components/custom/GridTable'
 import { getUsersColumnDefs } from './users-ag-grid-columns'
 import apiClient from '@/lib/api-client'
@@ -50,11 +50,11 @@ export function UsersAgGridTable({
   className,
 }: UsersAgGridTableProps) {
   const tableRef = useRef<GridTableRef>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [_isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Store pagination state
-  const [currentPage, setCurrentPage] = useState(1)
+  const [_currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
   // Get column definitions with action handlers

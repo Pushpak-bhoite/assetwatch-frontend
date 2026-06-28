@@ -7,7 +7,7 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { UsersActionDialog } from './components/users-action-dialog'
+import { UsersActionDialog, User } from './components/users-action-dialog'
 import { columns } from './components/users-columns'
 import { UsersDeleteDialog } from './components/users-delete-dialog'
 import { UsersInviteDialog } from './components/users-invite-dialog'
@@ -15,7 +15,7 @@ import { UsersTable } from './components/users-table'
 import UsersContextProvider, {
   type UsersDialogType,
 } from './context/users-context'
-import { User, userListSchema } from './data/schema'
+import { userListSchema } from './data/schema'
 import { users } from './data/users'
 
 export default function Users() {

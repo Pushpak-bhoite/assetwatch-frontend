@@ -9,7 +9,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { IServerSideGetRowsParams } from 'ag-grid-community'
 import GridTable, { GridTableRef } from '@/components/custom/GridTable'
-import { getAssetsColumnDefs, allAssetTypes } from './assets-ag-grid-columns'
+import { getAssetsColumnDefs } from './assets-ag-grid-columns'
 import apiClient from '@/lib/api-client'
 
 // ==================== TYPES ====================
@@ -46,7 +46,7 @@ export function AssetsAgGridTable({
 }: AssetsAgGridTableProps) {
   const tableRef = useRef<GridTableRef>(null)
   const navigate = useNavigate()
-  const [isLoading, setIsLoading] = useState(false)
+  const [_, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Store pagination state

@@ -45,7 +45,7 @@ export interface GridTableRef {
   getWrapperElement: () => HTMLDivElement | null
 }
 
-export interface GridTableProps extends Omit<AgGridReactProps, 'theme'> {
+export interface GridTableProps extends Omit<AgGridReactProps, 'theme' | 'rowSelection'> {
   /** Server-side datasource for fetching data */
   dataSource?: IServerSideDatasource
   /** Column definitions */
@@ -204,7 +204,6 @@ const GridTable = forwardRef<GridTableRef, GridTableProps>(function GridTable(
   // Common grid props shared between server-side and client-side modes
   const commonGridProps: Partial<AgGridReactProps> = {
     defaultColDef,
-    ref: gridRef,
     getRowId,
     columnDefs,
     theme: agTheme,

@@ -314,7 +314,7 @@ export function getMonitorColumnDefs(actions?: ColumnActions): ColDef<Monitor>[]
       ),
     },
     {
-      field: 'actions',
+      colId: 'actions',
       headerName: '',
       width: 120,
       sortable: false,
