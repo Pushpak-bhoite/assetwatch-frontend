@@ -17,13 +17,13 @@
 Clone the project
 
 ```bash
-  git clone https://github.com/satnaing/shadcn-admin.git
+  git clone https://github.com/Pushpak-bhoite/assetwatch-frontend.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd shadcn-admin
+  cd assetwatch-frontend
 ```
 
 Install dependencies
