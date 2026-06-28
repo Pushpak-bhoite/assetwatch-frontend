@@ -3,4 +3,5 @@ Tooltip
 check history, create a table in such a way that after 15 days check history data got to be purged.  
 implement permission check like assets in monitors and observability tab
 
-segregate backend code - schemas file and db.py 
+- segregate backend code - schemas file and db.py 
+I would not introduce a queue like RabbitMQ, Redis with queue libraries, or Apache Kafka.
