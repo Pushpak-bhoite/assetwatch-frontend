@@ -24,7 +24,13 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SelectDropdown } from '@/components/select-dropdown'
-import { userTypes } from '../data/data'
+
+const userTypes = [
+  { label: 'Admin', value: 'admin' },
+  { label: 'Manager', value: 'manager' },
+  { label: 'User', value: 'user' },
+  { label: 'Guest', value: 'guest' },
+]
 
 const formSchema = z.object({
   email: z
