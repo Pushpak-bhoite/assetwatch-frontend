@@ -25,6 +25,7 @@ export interface User {
   is_active: boolean
   is_superuser: boolean
   is_verified: boolean
+  profile_image_url: string | null
 }
 
 // Auth API functions

@@ -1,10 +1,13 @@
 import Cookies from 'js-cookie'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { SearchProvider } from '@/context/search-context'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
+import { useAuthStore } from '@/stores/authStore'
+import { authService } from '@/features/auth/api/auth.service'
 
 const ACCESS_TOKEN_KEY = 'thisisjustarandomstring'
 
@@ -29,6 +32,38 @@ export const Route = createFileRoute('/_authenticated')({
 
 function RouteComponent() {
   const defaultOpen = Cookies.get('sidebar:state') !== 'false'
+  const { user, setUser } = useAuthStore((state) => state.auth)
+  const [isLoading, setIsLoading] = useState(!user)
+
+  // Fetch user data if not already in store (e.g., on page refresh)
+  useEffect(() => {
+    async function fetchUser() {
+      if (!user) {
+        try {
+          const userData = await authService.getCurrentUser()
+          setUser(userData)
+        } catch (error) {
+          console.error('Failed to fetch user:', error)
+          // Token might be invalid, clear and redirect
+          Cookies.remove(ACCESS_TOKEN_KEY)
+          window.location.href = '/sign-in'
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+    fetchUser()
+  }, [user, setUser])
+
+  // Show loading while fetching user
+  if (isLoading) {
+    return (
+      <div className='flex h-screen items-center justify-center'>
+        <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
+      </div>
+    )
+  }
+
   return (
     <SearchProvider>
       <SidebarProvider defaultOpen={defaultOpen}>

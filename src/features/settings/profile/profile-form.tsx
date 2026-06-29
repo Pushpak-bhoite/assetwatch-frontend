@@ -1,8 +1,7 @@
 import { z } from 'zod'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from '@tanstack/react-router'
-import { cn } from '@/lib/utils'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,173 +14,283 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+import { useAuth, useAuthStore } from '@/stores/authStore'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Camera, Loader2, Trash2 } from 'lucide-react'
+import { profileService } from '@/features/users/api/profile.service'
+import apiClient from '@/lib/api-client'
 
 const profileFormSchema = z.object({
-  username: z
+  name: z
     .string()
     .min(2, {
-      message: 'Username must be at least 2 characters.',
+      message: 'Name must be at least 2 characters.',
     })
-    .max(30, {
-      message: 'Username must not be longer than 30 characters.',
+    .max(50, {
+      message: 'Name must not be longer than 50 characters.',
     }),
-  email: z
-    .string({
-      required_error: 'Please select an email to display.',
-    })
-    .email(),
-  bio: z.string().max(160).min(4),
-  urls: z
-    .array(
-      z.object({
-        value: z.string().url({ message: 'Please enter a valid URL.' }),
-      })
-    )
-    .optional(),
 })
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
-// This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {
-  bio: 'I own a computer.',
-  urls: [
-    { value: 'https://shadcn.com' },
-    { value: 'http://twitter.com/shadcn' },
-  ],
+// Get initials from name
+function getInitials(name: string): string {
+  if (!name) return 'U'
+  const parts = name.trim().split(' ')
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+  return name.substring(0, 2).toUpperCase()
+}
+
+// Get badge variant based on organization type
+function getOrgTypeBadge(orgType: string) {
+  const variants: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+    assetwatch: { variant: 'destructive', label: 'AssetWatch Admin' },
+    customer: { variant: 'default', label: 'Customer' },
+    reseller: { variant: 'secondary', label: 'Reseller' },
+    reseller_customer: { variant: 'outline', label: 'Reseller Customer' },
+  }
+  return variants[orgType] || { variant: 'outline' as const, label: orgType }
 }
 
 export default function ProfileForm() {
+  const { user } = useAuth()
+  const { setUser } = useAuthStore((state) => state.auth)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isImageLoading, setIsImageLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
+    defaultValues: {
+      name: user?.name || '',
+    },
     mode: 'onChange',
   })
 
-  const { fields, append } = useFieldArray({
-    name: 'urls',
-    control: form.control,
-  })
+  // Update form when user data loads (e.g., after page refresh)
+  useEffect(() => {
+    if (user?.name) {
+      form.reset({ name: user.name })
+    }
+  }, [user, form])
 
-  function onSubmit(data: ProfileFormValues) {
-    toast({
-      title: 'You submitted the following values:',
-      description: (
-        <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-          <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
+  async function onSubmit(data: ProfileFormValues) {
+    setIsLoading(true)
+    try {
+      // Update user profile via PATCH /users/me
+      const response = await apiClient.patch('/users/me', { name: data.name })
+      
+      // Update auth store with new user data
+      if (user) {
+        setUser({ ...user, name: data.name })
+      }
+
+      toast({
+        title: 'Profile updated',
+        description: 'Your profile has been updated successfully.',
+      })
+    } catch (error: any) {
+      toast({
+        title: 'Update failed',
+        description: error?.response?.data?.detail || 'Failed to update profile.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload a JPEG, PNG, GIF, or WebP image.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please upload an image smaller than 5MB.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsImageLoading(true)
+    try {
+      const result = await profileService.uploadProfileImage(file)
+      
+      // Update auth store with new profile image
+      if (user) {
+        setUser({ ...user, profile_image_url: result.profile_image_url })
+      }
+
+      toast({
+        title: 'Image uploaded',
+        description: 'Your profile image has been updated.',
+      })
+    } catch (error: any) {
+      toast({
+        title: 'Upload failed',
+        description: error?.response?.data?.detail || 'Failed to upload image.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsImageLoading(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  async function handleImageDelete() {
+    setIsImageLoading(true)
+    try {
+      await profileService.deleteProfileImage()
+      
+      // Update auth store to remove profile image
+      if (user) {
+        setUser({ ...user, profile_image_url: null })
+      }
+
+      toast({
+        title: 'Image removed',
+        description: 'Your profile image has been removed.',
+      })
+    } catch (error: any) {
+      toast({
+        title: 'Delete failed',
+        description: error?.response?.data?.detail || 'Failed to remove image.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsImageLoading(false)
+    }
+  }
+
+  const orgBadge = getOrgTypeBadge(user?.organization_type || 'customer')
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-        <FormField
-          control={form.control}
-          name='username'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder='shadcn' {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name. It can be your real name or a
-                pseudonym. You can only change this once every 30 days.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='email'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select a verified email to display' />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value='m@example.com'>m@example.com</SelectItem>
-                  <SelectItem value='m@google.com'>m@google.com</SelectItem>
-                  <SelectItem value='m@support.com'>m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                You can manage verified email addresses in your{' '}
-                <Link to='/'>email settings</Link>.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='bio'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder='Tell us a little bit about yourself'
-                  className='resize-none'
-                  {...field}
+        {/* Profile Image Section */}
+        <div className='space-y-4'>
+          <FormLabel>Profile Image</FormLabel>
+          <div className='flex items-center gap-6'>
+            <div className='relative'>
+              <Avatar className='h-24 w-24'>
+                <AvatarImage 
+                  src={user?.profile_image_url || undefined} 
+                  alt={user?.name || 'Profile'} 
                 />
+                <AvatarFallback className='text-2xl'>
+                  {getInitials(user?.name || '')}
+                </AvatarFallback>
+              </Avatar>
+              {isImageLoading && (
+                <div className='absolute inset-0 flex items-center justify-center bg-black/50 rounded-full'>
+                  <Loader2 className='h-6 w-6 animate-spin text-white' />
+                </div>
+              )}
+            </div>
+            <div className='flex flex-col gap-2'>
+              <input
+                ref={fileInputRef}
+                type='file'
+                accept='image/jpeg,image/png,image/gif,image/webp'
+                onChange={handleImageUpload}
+                className='hidden'
+                disabled={isImageLoading}
+              />
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isImageLoading}
+              >
+                <Camera className='mr-2 h-4 w-4' />
+                Change Image
+              </Button>
+              {user?.profile_image_url && (
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  onClick={handleImageDelete}
+                  disabled={isImageLoading}
+                  className='text-destructive hover:text-destructive'
+                >
+                  <Trash2 className='mr-2 h-4 w-4' />
+                  Remove
+                </Button>
+              )}
+              <p className='text-xs text-muted-foreground'>
+                JPEG, PNG, GIF or WebP. Max 5MB.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Name Field */}
+        <FormField
+          control={form.control}
+          name='name'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder='Your name' {...field} />
               </FormControl>
               <FormDescription>
-                You can <span>@mention</span> other users and organizations to
-                link to them.
+                This is your public display name.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div>
-          {fields.map((field, index) => (
-            <FormField
-              control={form.control}
-              key={field.id}
-              name={`urls.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={cn(index !== 0 && 'sr-only')}>
-                    URLs
-                  </FormLabel>
-                  <FormDescription className={cn(index !== 0 && 'sr-only')}>
-                    Add links to your website, blog, or social media profiles.
-                  </FormDescription>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-          <Button
-            type='button'
-            variant='outline'
-            size='sm'
-            className='mt-2'
-            onClick={() => append({ value: '' })}
-          >
-            Add URL
-          </Button>
+
+        {/* Email Field (Read-only) */}
+        <div className='space-y-2'>
+          <FormLabel>Email</FormLabel>
+          <Input 
+            value={user?.email || ''} 
+            disabled 
+            className='bg-muted'
+          />
+          <p className='text-sm text-muted-foreground'>
+            Your email address cannot be changed.
+          </p>
         </div>
-        <Button type='submit'>Update profile</Button>
+
+        {/* Organization Type (Read-only Badge) */}
+        <div className='space-y-2'>
+          <FormLabel>Account Type</FormLabel>
+          <div>
+            <Badge variant={orgBadge.variant}>{orgBadge.label}</Badge>
+          </div>
+          <p className='text-sm text-muted-foreground'>
+            Your account type determines your permissions.
+          </p>
+        </div>
+
+        <Button type='submit' disabled={isLoading}>
+          {isLoading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+          Update profile
+        </Button>
       </form>
     </Form>
   )

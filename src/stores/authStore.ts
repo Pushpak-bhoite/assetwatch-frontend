@@ -12,6 +12,7 @@ export interface AuthUser {
   is_active: boolean
   is_superuser: boolean
   is_verified: boolean
+  profile_image_url: string | null
 }
 
 interface AuthState {
