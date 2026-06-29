@@ -30,7 +30,6 @@
     "^@hookform/resolvers/zod$",
     "^@tanstack/react-query$",
     "^@tanstack/react-router$",
-    "^@tanstack/react-table$",
     "^@tabler/icons-react$",
     "<THIRD_PARTY_MODULES>",
     "^@/assets/(.*)",

@@ -2,7 +2,6 @@ import {
   IconBarrierBlock,
   IconBrowserCheck,
   IconBug,
-  IconChecklist,
   IconError404,
   IconHeartRateMonitor,
   IconHelp,
@@ -71,11 +70,6 @@ export const sidebarData: SidebarData = {
           title: 'Monitoring',
           url: '/monitoring',
           icon: IconRadar,
-        },
-        {
-          title: 'Tasks',
-          url: '/tasks',
-          icon: IconChecklist,
         },
         {
           title: 'Apps',
