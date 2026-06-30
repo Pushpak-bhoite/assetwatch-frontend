@@ -180,3 +180,66 @@ export type MonitorCreateRequest =
   | PingMonitorCreate
   | PortMonitorCreate
   | DNSMonitorCreate
+
+
+// ==================== MONITOR DETAILS PAGE TYPES ====================
+
+// Incident response
+export interface MonitorIncident {
+  id: string
+  monitor_id: string
+  started_at: string
+  ended_at: string | null
+  duration_seconds: number | null
+  error_message: string | null
+  check_count: number
+  is_resolved: boolean
+}
+
+// Hourly status point for 24-hour status dots
+export interface HourlyStatusPoint {
+  hour: number // 0-23
+  timestamp: string
+  status: 'up' | 'down' | 'partial' | 'no_data'
+  uptime_percentage: number
+  total_checks: number
+  failed_checks: number
+}
+
+// 24-hour status summary
+export interface HourlyStatusResponse {
+  hours: HourlyStatusPoint[]
+  total_incidents: number
+  total_downtime_minutes: number
+}
+
+// Chart data point
+export interface MetricsChartPoint {
+  timestamp: string
+  response_time: number | null
+  status: 'up' | 'down'
+}
+
+// Chart response
+export interface MetricsChartResponse {
+  data: MetricsChartPoint[]
+  range: '1h' | '24h' | '7d' | '30d'
+  avg_response_time: number | null
+  min_response_time: number | null
+  max_response_time: number | null
+  uptime_percentage: number
+}
+
+// Extended monitor details for details page
+export interface MonitorDetail extends Omit<Monitor, 'sparkline_data' | 'sparkline_period'> {
+  // 30-day stats
+  uptime_percentage_30d: number
+  avg_response_time_30d: number | null
+  total_checks_30d: number
+  total_incidents_30d: number
+  // Current incident (if down)
+  current_incident: MonitorIncident | null
+  consecutive_failures: number
+  // Last error
+  last_error: string | null
+}

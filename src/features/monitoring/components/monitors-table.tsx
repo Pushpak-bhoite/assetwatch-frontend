@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useRef, useState, useMemo } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { IServerSideGetRowsParams } from 'ag-grid-community'
 import GridTable, { GridTableRef } from '@/components/custom/GridTable'
 import { apiClient } from '@/lib/api-client'
@@ -29,6 +30,7 @@ const PAGE_SIZE = 20
 
 export function MonitorsTable() {
   const tableRef = useRef<GridTableRef>(null)
+  const navigate = useNavigate()
   const { toast } = useToast()
 
   // Dialog states
@@ -324,6 +326,12 @@ export function MonitorsTable() {
           serverSideInitialRowCount={10}
           maxBlocksInCache={10}
           suppressHorizontalScroll={false}
+          onRowClicked={(event: any) => {
+            // Navigate to monitor details on row click
+            if (event.data?.id) {
+              navigate({ to: '/monitoring/$monitorId', params: { monitorId: event.data.id } })
+            }
+          }}
         />
       </div>
 

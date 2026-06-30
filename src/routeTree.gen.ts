@@ -21,6 +21,7 @@ import { Route as auth500Import } from './routes/(auth)/500'
 import { Route as AuthenticatedObservabilityIndexImport } from './routes/_authenticated/observability/index'
 import { Route as AuthenticatedMonitoringIndexImport } from './routes/_authenticated/monitoring/index'
 import { Route as AuthenticatedAssetsIndexImport } from './routes/_authenticated/assets/index'
+import { Route as AuthenticatedMonitoringMonitorIdImport } from './routes/_authenticated/monitoring/$monitorId'
 import { Route as AuthenticatedAssetsAssetIdImport } from './routes/_authenticated/assets/$assetId'
 
 // Create Virtual Routes
@@ -294,6 +295,17 @@ const AuthenticatedSettingsAccountLazyRoute =
     ),
   )
 
+const AuthenticatedMonitoringMonitorIdRoute =
+  AuthenticatedMonitoringMonitorIdImport.update({
+    id: '/monitoring/$monitorId',
+    path: '/monitoring/$monitorId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/monitoring/$monitorId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 const AuthenticatedAssetsAssetIdRoute = AuthenticatedAssetsAssetIdImport.update(
   {
     id: '/assets/$assetId',
@@ -411,6 +423,13 @@ declare module '@tanstack/react-router' {
       path: '/assets/$assetId'
       fullPath: '/assets/$assetId'
       preLoaderRoute: typeof AuthenticatedAssetsAssetIdImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/monitoring/$monitorId': {
+      id: '/_authenticated/monitoring/$monitorId'
+      path: '/monitoring/$monitorId'
+      fullPath: '/monitoring/$monitorId'
+      preLoaderRoute: typeof AuthenticatedMonitoringMonitorIdImport
       parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/settings/account': {
@@ -532,6 +551,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteLazyRoute: typeof AuthenticatedSettingsRouteLazyRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAssetsAssetIdRoute: typeof AuthenticatedAssetsAssetIdRoute
+  AuthenticatedMonitoringMonitorIdRoute: typeof AuthenticatedMonitoringMonitorIdRoute
   AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
   AuthenticatedMonitoringIndexRoute: typeof AuthenticatedMonitoringIndexRoute
   AuthenticatedObservabilityIndexRoute: typeof AuthenticatedObservabilityIndexRoute
@@ -546,6 +566,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSettingsRouteLazyRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAssetsAssetIdRoute: AuthenticatedAssetsAssetIdRoute,
+  AuthenticatedMonitoringMonitorIdRoute: AuthenticatedMonitoringMonitorIdRoute,
   AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
   AuthenticatedMonitoringIndexRoute: AuthenticatedMonitoringIndexRoute,
   AuthenticatedObservabilityIndexRoute: AuthenticatedObservabilityIndexRoute,
@@ -573,6 +594,7 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503LazyRoute
   '/': typeof AuthenticatedIndexRoute
   '/assets/$assetId': typeof AuthenticatedAssetsAssetIdRoute
+  '/monitoring/$monitorId': typeof AuthenticatedMonitoringMonitorIdRoute
   '/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceLazyRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
@@ -600,6 +622,7 @@ export interface FileRoutesByTo {
   '/503': typeof errors503LazyRoute
   '/': typeof AuthenticatedIndexRoute
   '/assets/$assetId': typeof AuthenticatedAssetsAssetIdRoute
+  '/monitoring/$monitorId': typeof AuthenticatedMonitoringMonitorIdRoute
   '/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceLazyRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
@@ -631,6 +654,7 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503LazyRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/assets/$assetId': typeof AuthenticatedAssetsAssetIdRoute
+  '/_authenticated/monitoring/$monitorId': typeof AuthenticatedMonitoringMonitorIdRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceLazyRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayLazyRoute
@@ -662,6 +686,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/assets/$assetId'
+    | '/monitoring/$monitorId'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -688,6 +713,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/assets/$assetId'
+    | '/monitoring/$monitorId'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -717,6 +743,7 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/_authenticated/'
     | '/_authenticated/assets/$assetId'
+    | '/_authenticated/monitoring/$monitorId'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
@@ -792,6 +819,7 @@ export const routeTree = rootRoute
         "/_authenticated/settings",
         "/_authenticated/",
         "/_authenticated/assets/$assetId",
+        "/_authenticated/monitoring/$monitorId",
         "/_authenticated/assets/",
         "/_authenticated/monitoring/",
         "/_authenticated/observability/",
@@ -851,6 +879,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/assets/$assetId": {
       "filePath": "_authenticated/assets/$assetId.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/monitoring/$monitorId": {
+      "filePath": "_authenticated/monitoring/$monitorId.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/settings/account": {
