@@ -15,7 +15,16 @@ import {
   Pause,
   Trash2,
   Pencil,
+  MoreVertical,
 } from 'lucide-react'
+import { SparklineCellRenderer } from './sparkline-cell'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 // ==================== HELPERS ====================
 
@@ -216,41 +225,58 @@ function ActionsCellRenderer({ params, onToggle, onEdit, onDelete }: ActionsCell
   if (!data) return null
 
   return (
-    <div className="flex h-full items-center justify-center gap-1">
-      <button
-        className={`rounded p-1.5 transition-colors ${
-          data.is_active
-            ? 'text-yellow-600 hover:bg-yellow-500/10'
-            : 'text-green-600 hover:bg-green-500/10'
-        }`}
-        title={data.is_active ? 'Pause Monitor' : 'Resume Monitor'}
-        onClick={(e) => {
-          e.stopPropagation()
-          onToggle?.(data)
-        }}
-      >
-        {data.is_active ? <Pause size={16} /> : <Play size={16} />}
-      </button>
-      <button
-        className="rounded p-1.5 text-primary transition-colors hover:bg-primary/10"
-        title="Edit Monitor"
-        onClick={(e) => {
-          e.stopPropagation()
-          onEdit?.(data)
-        }}
-      >
-        <Pencil size={16} />
-      </button>
-      <button
-        className="rounded p-1.5 text-red-600 transition-colors hover:bg-red-500/10"
-        title="Delete Monitor"
-        onClick={(e) => {
-          e.stopPropagation()
-          onDelete?.(data)
-        }}
-      >
-        <Trash2 size={16} />
-      </button>
+    <div className="flex h-full items-center justify-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreVertical size={16} />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggle?.(data)
+            }}
+            className={data.is_active ? 'text-yellow-600' : 'text-green-600'}
+          >
+            {data.is_active ? (
+              <>
+                <Pause size={14} className="mr-2" />
+                Pause
+              </>
+            ) : (
+              <>
+                <Play size={14} className="mr-2" />
+                Resume
+              </>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit?.(data)
+            }}
+          >
+            <Pencil size={14} className="mr-2" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete?.(data)
+            }}
+            className="text-red-600 focus:text-red-600"
+          >
+            <Trash2 size={14} className="mr-2" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }
@@ -314,11 +340,24 @@ export function getMonitorColumnDefs(actions?: ColumnActions): ColDef<Monitor>[]
       ),
     },
     {
-      colId: 'actions',
-      headerName: '',
-      width: 120,
+      field: 'sparkline_data',
+      headerName: 'Response Trend',
+      width: 160,
       sortable: false,
       filter: false,
+      cellRenderer: (params: ICellRendererParams<Monitor>) => (
+        <SparklineCellRenderer params={params} />
+      ),
+    },
+    {
+      colId: 'actions',
+      headerName: '',
+      width: 50,
+      minWidth: 50,
+      maxWidth: 50,
+      sortable: false,
+      filter: false,
+      suppressHeaderMenuButton: true,
       cellRenderer: (params: ICellRendererParams<Monitor>) => (
         <ActionsCellRenderer
           params={params}

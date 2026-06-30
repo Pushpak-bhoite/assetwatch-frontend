@@ -79,6 +79,13 @@ export const MONITOR_TYPE_INFO: Record<
   },
 }
 
+// Sparkline data point for response time visualization
+export interface SparklinePoint {
+  response_time: number | null  // null = failed/timeout
+  status: 'up' | 'down'
+  timestamp: string
+}
+
 // Monitor response interface
 export interface Monitor {
   id: string
@@ -103,6 +110,9 @@ export interface Monitor {
   dns_server?: string | null
   record_type?: string | null
   expected_value?: string | null
+  // Sparkline data
+  sparkline_data: SparklinePoint[]
+  sparkline_period: string | null
 }
 
 // Paginated response
