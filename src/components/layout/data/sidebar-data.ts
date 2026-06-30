@@ -56,6 +56,11 @@ export const sidebarData: SidebarData = {
           url: '/',
           icon: IconLayoutDashboard,
         },
+          {
+          title: 'Monitoring',
+          url: '/monitoring',
+          icon: IconRadar,
+        },
         {
           title: 'Assets',
           url: '/assets',
@@ -66,11 +71,7 @@ export const sidebarData: SidebarData = {
           url: '/observability',
           icon: IconHeartRateMonitor,
         },
-        {
-          title: 'Monitoring',
-          url: '/monitoring',
-          icon: IconRadar,
-        },
+      
         // {
         //   title: 'Apps',
         //   url: '/apps',
