@@ -243,3 +243,135 @@ export interface MonitorDetail extends Omit<Monitor, 'sparkline_data' | 'sparkli
   // Last error
   last_error: string | null
 }
+
+
+// ==================== DASHBOARD TYPES ====================
+
+// Dashboard overview stats
+export interface DashboardOverviewStats {
+  total_monitors: number
+  monitors_up: number
+  monitors_down: number
+  monitors_paused: number
+  monitors_unknown: number
+  monitors_warning: number
+  global_uptime_percentage: number
+  avg_response_time: number | null
+  uptime_trend: number | null
+  response_time_trend: number | null
+}
+
+// Recent incident for dashboard
+export interface DashboardRecentIncident {
+  id: string
+  monitor_id: string
+  monitor_name: string
+  monitor_type: string
+  target: string
+  started_at: string
+  ended_at: string | null
+  duration_seconds: number | null
+  error_message: string | null
+  is_resolved: boolean
+}
+
+// Recent activity response
+export interface DashboardRecentActivity {
+  incidents: DashboardRecentIncident[]
+  total_incidents_24h: number
+  total_downtime_minutes_24h: number
+}
+
+// Monitor status for grid
+export interface DashboardMonitorStatus {
+  id: string
+  friendly_name: string
+  monitor_type: string
+  target: string
+  current_status: 'up' | 'down' | 'paused' | 'unknown' | 'warning'
+  response_time: number | null
+  uptime_percentage: number | null
+  last_check_at: string | null
+}
+
+// Monitor status grid response
+export interface DashboardStatusGrid {
+  monitors: DashboardMonitorStatus[]
+  total: number
+}
+
+// Response time trend data point
+export interface DashboardTrendPoint {
+  timestamp: string
+  avg_response_time: number | null
+  min_response_time: number | null
+  max_response_time: number | null
+  total_checks: number
+  failed_checks: number
+}
+
+// Response time trend response
+export interface DashboardTrendResponse {
+  data: DashboardTrendPoint[]
+  range: '24h' | '7d' | '30d'
+  overall_avg: number | null
+  overall_uptime: number
+}
+
+// Uptime by type item
+export interface DashboardUptimeByType {
+  monitor_type: string
+  count: number
+  uptime_percentage: number
+  avg_response_time: number | null
+}
+
+// Uptime by type response
+export interface DashboardUptimeByTypeResponse {
+  types: DashboardUptimeByType[]
+}
+
+// Warning item
+export interface DashboardWarning {
+  id: string
+  monitor_id: string
+  monitor_name: string
+  warning_type: 'slow_response' | 'high_error_rate' | 'ssl_expiring'
+  message: string
+  severity: 'low' | 'medium' | 'high'
+  created_at: string
+}
+
+// Warnings response
+export interface DashboardWarningsResponse {
+  warnings: DashboardWarning[]
+  total: number
+}
+
+// Monitor location for map
+export interface DashboardMonitorLocation {
+  id: string
+  friendly_name: string
+  target: string
+  status: string
+  latitude: number | null
+  longitude: number | null
+  city: string | null
+  country: string | null
+}
+
+// Map data response
+export interface DashboardMapData {
+  locations: DashboardMonitorLocation[]
+  coming_soon: boolean
+}
+
+// Full dashboard response
+export interface DashboardResponse {
+  overview: DashboardOverviewStats
+  recent_activity: DashboardRecentActivity
+  response_trend: DashboardTrendResponse
+  uptime_by_type: DashboardUptimeByTypeResponse
+  warnings: DashboardWarningsResponse
+  map_data: DashboardMapData
+}
