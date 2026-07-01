@@ -12,7 +12,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, Pause, Play, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { ArrowLeft, StopCircle, Play, Settings, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { apiClient } from '@/lib/api-client'
@@ -228,14 +228,14 @@ export function MonitorDetails() {
             {isToggling ? (
               <Loader2 size={16} className="mr-2 animate-spin" />
             ) : monitor.is_active ? (
-              <Pause size={16} className="mr-2" />
+              <StopCircle size={16} className="mr-2" />
             ) : (
               <Play size={16} className="mr-2" />
             )}
             {monitor.is_active ? 'Pause' : 'Resume'}
           </Button>
           <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
-            <Pencil size={16} className="mr-2" />
+            <Settings size={16} className="mr-2" />
             Edit
           </Button>
           <Button

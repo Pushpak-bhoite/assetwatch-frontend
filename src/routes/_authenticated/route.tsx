@@ -10,7 +10,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { authService } from '@/features/auth/api/auth.service'
 import { Beacon } from '@/features/beacon'
 
-const ACCESS_TOKEN_KEY = 'pushpak_access_token'
+const ACCESS_TOKEN_KEY = 'thisisjustarandomstring'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({ location }) => {

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
 
-const ACCESS_TOKEN_KEY = 'pushpak_access_token'
+const ACCESS_TOKEN_KEY = 'thisisjustarandomstring'
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
