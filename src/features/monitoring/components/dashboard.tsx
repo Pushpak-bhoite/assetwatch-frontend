@@ -23,7 +23,7 @@ import {
   DashboardTrendResponse,
   DashboardStatusGrid,
 } from '../types'
-import { apiFetch } from '@/lib/api-fetch'
+import { apiClient } from '@/lib/api-client'
 
 type TimeRange = '24h' | '7d' | '30d'
 
@@ -40,11 +40,8 @@ export function Dashboard() {
   } = useQuery<DashboardResponse>({
     queryKey: ['dashboard'],
     queryFn: async () => {
-      const response = await apiFetch('/dashboard')
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard data')
-      }
-      return response.json()
+      const response = await apiClient.get<DashboardResponse>('/dashboard')
+      return response.data
     },
     refetchInterval: 60000, // Refresh every minute
     staleTime: 30000, // Data is fresh for 30 seconds
@@ -57,11 +54,8 @@ export function Dashboard() {
   } = useQuery<DashboardStatusGrid>({
     queryKey: ['dashboard', 'grid'],
     queryFn: async () => {
-      const response = await apiFetch('/dashboard/grid')
-      if (!response.ok) {
-        throw new Error('Failed to fetch grid data')
-      }
-      return response.json()
+      const response = await apiClient.get<DashboardStatusGrid>('/dashboard/grid')
+      return response.data
     },
     refetchInterval: 60000,
     staleTime: 30000,
@@ -74,11 +68,8 @@ export function Dashboard() {
   } = useQuery<DashboardTrendResponse>({
     queryKey: ['dashboard', 'trend', trendRange],
     queryFn: async () => {
-      const response = await apiFetch(`/dashboard/trend?range=${trendRange}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch trend data')
-      }
-      return response.json()
+      const response = await apiClient.get<DashboardTrendResponse>(`/dashboard/trend?range=${trendRange}`)
+      return response.data
     },
     staleTime: 30000,
   })
@@ -105,7 +96,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 lg:p-6">
+    <div className="flex flex-col gap-6 p-2 lg:p-2">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

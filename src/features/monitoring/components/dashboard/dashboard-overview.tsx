@@ -106,7 +106,7 @@ export function DashboardOverview({ stats, isLoading }: DashboardOverviewProps) 
       color: stats.monitors_warning > 0 ? 'text-yellow-600' : 'text-green-600',
       bgColor: stats.monitors_warning > 0 ? 'bg-yellow-500/10' : 'bg-green-500/10',
       subtitle: stats.monitors_warning > 0 
-        ? 'Monitors need attention' 
+        ? 'Monitor(s) need attention' 
         : 'All systems normal',
     },
   ]
