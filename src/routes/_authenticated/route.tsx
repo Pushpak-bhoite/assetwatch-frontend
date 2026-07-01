@@ -8,6 +8,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
 import { useAuthStore } from '@/stores/authStore'
 import { authService } from '@/features/auth/api/auth.service'
+import { Beacon } from '@/features/beacon'
 
 const ACCESS_TOKEN_KEY = 'thisisjustarandomstring'
 
@@ -83,6 +84,8 @@ function RouteComponent() {
         >
           <Outlet />
         </div>
+        {/* Beacon AI Assistant */}
+        <Beacon />
       </SidebarProvider>
     </SearchProvider>
   )
