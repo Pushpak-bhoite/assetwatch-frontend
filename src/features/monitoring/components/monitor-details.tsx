@@ -175,7 +175,7 @@ export function MonitorDetails() {
 
   if (isLoading) {
     return (
-      <div className="flex h-96 items-center justify-center pt-4 pr-6 pb-6">
+      <div className="flex h-96 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -183,7 +183,7 @@ export function MonitorDetails() {
 
   if (!monitor) {
     return (
-      <div className="flex h-96 flex-col items-center justify-center pt-4 pr-6 pb-6">
+      <div className="flex h-96 flex-col items-center justify-center">
         <p className="text-lg font-medium">Monitor not found</p>
         <Button
           variant="link"
@@ -197,7 +197,7 @@ export function MonitorDetails() {
   }
 
   return (
-    <div className="space-y-6 pt-4 pr-6 pb-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>

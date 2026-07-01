@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { MonitorDetails } from '@/features/monitoring/components/monitor-details'
+import MonitorDetailPage from '@/features/monitoring/monitor-detail-page'
 
 export const Route = createLazyFileRoute('/_authenticated/monitoring/$monitorId')({
-  component: MonitorDetails,
+  component: MonitorDetailPage,
 })

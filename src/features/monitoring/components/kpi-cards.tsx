@@ -90,7 +90,7 @@ export function KPICards({ monitor }: KPICardsProps) {
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {kpis.map((kpi, index) => (
         <Card key={index} className="relative overflow-hidden">
           <CardContent className="p-4">
@@ -132,7 +132,7 @@ export function KPICards({ monitor }: KPICardsProps) {
 
       {/* Error Card - Show if monitor is down or has recent error */}
       {(monitor.current_status === 'down' ) && (
-        <Card className="col-span-2 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20 md:col-span-3 lg:col-span-5">
+        <Card className="col-span-full border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 text-red-600 dark:text-red-400" size={20} />
